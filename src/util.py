@@ -742,3 +742,6 @@ def unmutePrint():
 
     sys.stdout = _ORIGINAL_STDOUT
     #sys.stderr = _ORIGINAL_STDERR
+
+def convergence(lastAgent,agent):
+    pass

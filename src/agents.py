@@ -8,6 +8,9 @@ class Q_learning_agent:
         self.alpha = float(alpha)
         self.epsilon = float(epsilon)
         self.discount = float(gamma)
+        self.lastState = None
+        self.lastAction = None
+        self.state_list = set()
 
     def getQValue(self, state, action):
         """
@@ -15,7 +18,7 @@ class Q_learning_agent:
           Should return 0.0 if we have never seen a state
           or the Q node value otherwise
         """
-        return self.QValues[state.remain_coins, action]
+        return self.QValues[state, action]
 
     def computeValueFromQValues(self, state):
         """
@@ -39,7 +42,6 @@ class Q_learning_agent:
           are no legal actions, which is the case at the terminal state,
           you should return None.
         """
-        "*** YOUR CODE HERE ***"
         legal_actions = state.getLegalActions()  # all the legal actions
 
         value = self.getValue(state)
@@ -69,7 +71,7 @@ class Q_learning_agent:
             action = random.choice(legalActions)
         else:
             action = self.getPolicy(state)
-
+        self.doAction(state, action)
         return action
 
     def update(self, state, action, nextState, reward):
@@ -83,4 +85,30 @@ class Q_learning_agent:
         "*** YOUR CODE HERE ***"
         newQValue = (1 - self.alpha) * self.getQValue(state, action)  # new Qvalue
         newQValue += self.alpha * (reward + (self.discount * self.getValue(nextState)))
-        self.QValues[state.remain_coins, action] = newQValue
+        self.QValues[state, action] = newQValue
+
+    def observeTransition(self, state, action, nextState, deltaReward):
+        """
+            Called by environment to inform agent that a transition has
+            been observed. This will result in a call to self.update
+            on the same arguments
+
+            NOTE: Do *not* override or call this function
+        """
+        self.update(state, action, nextState, deltaReward)
+
+    def observationFunction(self, state, reward):
+        """
+            This is where we ended up after our last action.
+            The simulation should somehow ensure this is called
+        """
+        if not self.lastState is None:
+            self.observeTransition(self.lastState, self.lastAction, state, reward)
+
+    def doAction(self, state, action):
+        """
+            Called by inherited class when
+            an action is taken in a state
+        """
+        self.lastState = state
+        self.lastAction = action
